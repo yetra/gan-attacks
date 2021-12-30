@@ -90,7 +90,7 @@ class DCGAN(keras.Model):
         noise = tf.random.normal(shape=(batch_size, self.latent_dim))
 
         # decode noise as generated images
-        generated_images = self.generator(noise)
+        generated_images = self.generator(noise, training=True)
         misleading_labels = tf.ones((batch_size, 1))  # assume all are real
 
         # combine generated and real images for the discriminator
@@ -104,10 +104,10 @@ class DCGAN(keras.Model):
         # discriminator training - max log(D(x)) + log(1 - D(G(z)))
         # generator training - max log(D(G(z)))
         with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
-            predictions = self.discriminator(combined_images)
+            predictions = self.discriminator(combined_images, training=True)
             d_loss = self.loss_fn(labels, predictions)
 
-            predictions = self.discriminator(self.generator(noise))
+            predictions = self.discriminator(self.generator(noise, training=True), training=True)
             g_loss = self.loss_fn(misleading_labels, predictions)
 
         d_grads = d_tape.gradient(d_loss, self.discriminator.trainable_variables)
