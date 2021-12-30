@@ -85,26 +85,26 @@ class DCGAN(keras.Model):
         batch_size = tf.shape(real_images)[0]
         noise = tf.random.normal(shape=(batch_size, self.latent_dim))
 
-        # decode noise as generated images
-        generated_images = self.generator(noise, training=True)
-        misleading_labels = tf.ones((batch_size, 1))  # assume all are real
-
-        # combine generated and real images for the discriminator
-        combined_images = tf.concat([generated_images, real_images], axis=0)
-        labels = tf.concat([
-            tf.zeros((batch_size, 1)),  # 0 for generated images
-            tf.ones((batch_size, 1))  # 1 for real images
-        ], axis=0)
-
         # train the discriminator and the generator (separately)
         # discriminator training - max log(D(x)) + log(1 - D(G(z)))
         # generator training - max log(D(G(z)))
         with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
-            predictions = self.discriminator(combined_images, training=True)
-            d_loss = self.loss_fn(labels, predictions)
+            generated_images = self.generator(noise, training=True)
 
-            predictions = self.discriminator(self.generator(noise, training=True), training=True)
-            g_loss = self.loss_fn(misleading_labels, predictions)
+            real_predictions = self.discriminator(real_images, training=True)
+            generated_predictions = self.discriminator(generated_images, training=True)
+
+            d_real_loss = self.loss_fn(
+                tf.ones_like(real_predictions),  # 1s for real images
+                real_predictions)
+            d_generated_loss = self.loss_fn(
+                tf.zeros_like(generated_predictions),  # 0s for generated images
+                generated_predictions)
+            d_loss = d_real_loss + d_generated_loss
+
+            g_loss = self.loss_fn(
+                tf.ones_like(generated_predictions),  # assume generated images are real
+                generated_predictions)
 
         d_grads = d_tape.gradient(d_loss, self.discriminator.trainable_variables)
         g_grads = g_tape.gradient(g_loss, self.generator.trainable_variables)
@@ -114,7 +114,7 @@ class DCGAN(keras.Model):
         self.g_optimizer.apply_gradients(
             zip(g_grads, self.generator.trainable_variables))
 
-        # Update metrics
+        # update metrics
         self.d_loss_metric.update_state(d_loss)
         self.g_loss_metric.update_state(g_loss)
 
