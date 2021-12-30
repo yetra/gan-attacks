@@ -58,7 +58,7 @@ def mnist_discriminator():
     model.add(layers.Dropout(0.3))
 
     model.add(layers.Flatten())
-    model.add(layers.Dense(1))
+    model.add(layers.Dense(1, activation='sigmoid'))
 
     return model
 
