@@ -59,3 +59,68 @@ def mnist_discriminator():
     model.add(layers.Dense(1))
 
     return model
+
+
+class DCGAN(keras.Model):
+    def __init__(self, discriminator, generator, latent_dim):
+        super().__init__()
+
+        self.discriminator = discriminator
+        self.generator = generator
+        self.latent_dim = latent_dim
+
+    def compile(self, d_optimizer, g_optimizer, loss_fn):
+        super().compile()
+
+        self.d_optimizer = d_optimizer
+        self.g_optimizer = g_optimizer
+        self.loss_fn = loss_fn
+        self.d_loss_metric = keras.metrics.Mean(name='d_loss')
+        self.g_loss_metric = keras.metrics.Mean(name='g_loss')
+
+    @property
+    def metrics(self):
+        return [self.d_loss_metric, self.g_loss_metric]
+
+    def train_step(self, real_images):
+        # sample random noise in the latent space
+        batch_size = tf.shape(real_images)[0]
+        noise = tf.random.normal(shape=(batch_size, self.latent_dim))
+
+        # decode noise as generated images
+        generated_images = self.generator(noise)
+        misleading_labels = tf.ones((batch_size, 1))  # assume all are real
+
+        # combine generated and real images for the discriminator
+        combined_images = tf.concat([generated_images, real_images], axis=0)
+        labels = tf.concat([
+            tf.zeros((batch_size, 1)),  # 0 for generated images
+            tf.ones((batch_size, 1))  # 1 for real images
+        ], axis=0)
+
+        # train the discriminator and the generator (separately)
+        # discriminator training - max log(D(x)) + log(1 - D(G(z)))
+        # generator training - max log(D(G(z)))
+        with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
+            predictions = self.discriminator(combined_images)
+            d_loss = self.loss_fn(labels, predictions)
+
+            predictions = self.discriminator(self.generator(noise))
+            g_loss = self.loss_fn(misleading_labels, predictions)
+
+        d_grads = d_tape.gradient(d_loss, self.discriminator.trainable_variables)
+        g_grads = g_tape.gradient(g_loss, self.generator.trainable_variables)
+
+        self.d_optimizer.apply_gradients(
+            zip(d_grads, self.discriminator.trainable_variables))
+        self.g_optimizer.apply_gradients(
+            zip(g_grads, self.generator.trainable_variables))
+
+        # Update metrics
+        self.d_loss_metric.update_state(d_loss)
+        self.g_loss_metric.update_state(g_loss)
+
+        return {
+            'd_loss': self.d_loss_metric.result(),
+            'g_loss': self.g_loss_metric.result(),
+        }
