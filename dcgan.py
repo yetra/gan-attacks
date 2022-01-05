@@ -46,8 +46,6 @@ class DCGAN(keras.Model):
         noise = tf.random.normal(shape=(batch_size, self.latent_dim))
 
         # train the discriminator and the generator (separately)
-        # discriminator training - max log(D(x)) + log(1 - D(G(z)))
-        # generator training - max log(D(G(z)))
         with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
             generated_images = self.generator(noise, training=True)
 
@@ -57,9 +55,11 @@ class DCGAN(keras.Model):
             d_loss = self.discriminator_loss(real_output, fake_output)
             g_loss = self.generator_loss(fake_output)
 
+        # calculate the gradients for the generators and discriminators
         d_grads = d_tape.gradient(d_loss, self.discriminator.trainable_variables)
         g_grads = g_tape.gradient(g_loss, self.generator.trainable_variables)
 
+        # apply the gradients to the optimizers
         self.d_optimizer.apply_gradients(
             zip(d_grads, self.discriminator.trainable_variables))
         self.g_optimizer.apply_gradients(
