@@ -6,9 +6,10 @@ import tensorflow as tf
 
 
 class GANMonitor(tf.keras.callbacks.Callback):
-    def __init__(self, num_images, latent_dim):
+    def __init__(self, num_images, latent_dim, filename):
         super().__init__()
 
+        self.filename = filename
         self.noise = tf.random.normal(shape=(num_images, latent_dim))
 
     def on_epoch_end(self, epoch, logs=None):
@@ -19,7 +20,7 @@ class GANMonitor(tf.keras.callbacks.Callback):
             plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
             plt.axis('off')
 
-        plt.savefig(f'epoch_{epoch + 1:03d}.png')
+        plt.savefig(f'{self.filename}_{epoch + 1:03d}.png')
         plt.show()
 
 
