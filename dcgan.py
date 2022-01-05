@@ -51,20 +51,11 @@ class DCGAN(keras.Model):
         with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
             generated_images = self.generator(noise, training=True)
 
-            real_predictions = self.discriminator(real_images, training=True)
-            generated_predictions = self.discriminator(generated_images, training=True)
+            real_output = self.discriminator(real_images, training=True)
+            fake_output = self.discriminator(generated_images, training=True)
 
-            d_real_loss = self.loss_fn(
-                tf.ones_like(real_predictions),  # 1s for real images
-                real_predictions)
-            d_generated_loss = self.loss_fn(
-                tf.zeros_like(generated_predictions),  # 0s for generated images
-                generated_predictions)
-            d_loss = d_real_loss + d_generated_loss
-
-            g_loss = self.loss_fn(
-                tf.ones_like(generated_predictions),  # assume generated images are real
-                generated_predictions)
+            d_loss = self.discriminator_loss(real_output, fake_output)
+            g_loss = self.generator_loss(fake_output)
 
         d_grads = d_tape.gradient(d_loss, self.discriminator.trainable_variables)
         g_grads = g_tape.gradient(g_loss, self.generator.trainable_variables)
