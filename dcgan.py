@@ -31,6 +31,15 @@ class DCGAN(keras.Model):
         # assume generated images are real
         return self.loss_fn(tf.ones_like(fake_output), fake_output)
 
+    def discriminator_loss(self, real_output, fake_output):
+        # 1s for real images
+        real_loss = self.loss_fn(tf.ones_like(real_output), real_output)
+
+        # 0s for generated images
+        fake_loss = self.loss_fn(tf.zeros_like(fake_output), fake_output)
+
+        return real_loss + fake_loss
+
     def train_step(self, real_images):
         # sample random noise in the latent space
         batch_size = tf.shape(real_images)[0]
