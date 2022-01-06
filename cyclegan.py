@@ -79,18 +79,18 @@ class CycleGAN(tf.keras.Model):
             disc_fake_y = self.disc_y(fake_y, training=True)
 
             # generator loss components
-            adv_gen_g_loss = self.generator_loss(disc_fake_y)
-            adv_gen_f_loss = self.generator_loss(disc_fake_x)
+            gen_g_adv_loss = self.generator_loss(disc_fake_y)
+            gen_f_adv_loss = self.generator_loss(disc_fake_x)
 
-            cyc_gen_g_loss = self.cycle_consistency_loss_fn(real_y, cycled_y) * self.lambda_cyc
-            cyc_gen_f_loss = self.cycle_consistency_loss_fn(real_x, cycled_x) * self.lambda_cyc
+            gen_g_cyc_loss = self.cycle_consistency_loss_fn(real_y, cycled_y) * self.lambda_cyc
+            gen_f_cyc_loss = self.cycle_consistency_loss_fn(real_x, cycled_x) * self.lambda_cyc
 
-            id_gen_g_loss = self.identity_loss_fn(real_y, same_y) * 0.5 * self.lambda_id
-            id_gen_f_loss = self.identity_loss_fn(real_x, same_x) * 0.5 * self.lambda_id
+            gen_g_id_loss = self.identity_loss_fn(real_y, same_y) * 0.5 * self.lambda_id
+            gen_f_id_loss = self.identity_loss_fn(real_x, same_x) * 0.5 * self.lambda_id
 
             # generator loss = adversarial loss + cycle consistency loss + identity loss
-            gen_g_loss = adv_gen_g_loss + cyc_gen_g_loss + id_gen_g_loss
-            gen_f_loss = adv_gen_f_loss + cyc_gen_f_loss + id_gen_f_loss
+            gen_g_loss = gen_g_adv_loss + gen_g_cyc_loss + gen_g_id_loss
+            gen_f_loss = gen_f_adv_loss + gen_f_cyc_loss + gen_f_id_loss
 
             # discriminator loss
             disc_x_loss = self.discriminator_loss(disc_real_x, disc_fake_x)
