@@ -36,9 +36,9 @@ class GANMonitor(tf.keras.callbacks.Callback):
         plt.show()
 
 
-def create_gif(image_pattern, gif_path):
+def images_to_gif(image_pattern, gif_path):
     """
-    Creates a GIF from the images located at `image_pattern`.
+    Creates a GIF from the images specified with `image_pattern`.
 
     :param image_pattern: filename pattern of the images (GIF frames)
     :param gif_path: path to the GIF
