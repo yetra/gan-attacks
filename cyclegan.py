@@ -2,13 +2,13 @@ import tensorflow as tf
 
 
 class CycleGAN(tf.keras.Model):
-    def __init__(self, discriminator_x, discriminator_y, generator_g, generator_f):
+    def __init__(self, disc_x, disc_y, gen_g, gen_f):
         super().__init__()
 
-        self.discriminator_x = discriminator_x
-        self.discriminator_y = discriminator_y
-        self.generator_g = generator_g
-        self.generator_f = generator_f
+        self.disc_x = disc_x
+        self.disc_y = disc_y
+        self.gen_g = gen_g
+        self.gen_f = gen_f
 
     def compile(self, disc_x_optimizer, disc_y_optimizer, gen_g_optimizer,
                 gen_f_optimizer, loss_fn, loss_lambda):
@@ -65,25 +65,25 @@ class CycleGAN(tf.keras.Model):
             # F : Y -> X
 
             # X -> G(X) -> F(G(X))
-            fake_y = self.generator_g(real_x, training=True)
-            cycled_x = self.generator_f(fake_y, training=True)
+            fake_y = self.gen_g(real_x, training=True)
+            cycled_x = self.gen_f(fake_y, training=True)
 
             # Y -> F(Y) -> G(F(Y))
-            fake_x = self.generator_f(real_y, training=True)
-            cycled_y = self.generator_g(fake_x, training=True)
+            fake_x = self.gen_f(real_y, training=True)
+            cycled_y = self.gen_g(fake_x, training=True)
 
             # for the identity loss:
             # if the generators get an image from their target domain as input
             # they should output the same image (or something similar to it)
-            same_x = self.generator_f(real_x, training=True)  # X -> F(X)
-            same_y = self.generator_g(real_y, training=True)  # Y -> G(Y)
+            same_x = self.gen_f(real_x, training=True)  # X -> F(X)
+            same_y = self.gen_g(real_y, training=True)  # Y -> G(Y)
 
             # get predictions from the discriminators
-            disc_real_x = self.discriminator_x(real_x, training=True)
-            disc_real_y = self.discriminator_y(real_y, training=True)
+            disc_real_x = self.disc_x(real_x, training=True)
+            disc_real_y = self.disc_y(real_y, training=True)
 
-            disc_fake_x = self.discriminator_x(fake_x, training=True)
-            disc_fake_y = self.discriminator_y(fake_y, training=True)
+            disc_fake_x = self.disc_x(fake_x, training=True)
+            disc_fake_y = self.disc_y(fake_y, training=True)
 
             # generator adversarial loss
             adv_gen_g_loss = self.generator_loss(disc_fake_y)
@@ -102,22 +102,22 @@ class CycleGAN(tf.keras.Model):
             disc_y_loss = self.discriminator_loss(disc_real_y, disc_fake_y)
 
         # calculate the gradients for the generators and discriminators
-        gen_g_grads = tape.gradient(gen_g_loss, self.generator_g.trainable_variables)
-        gen_f_grads = tape.gradient(gen_f_loss, self.generator_f.trainable_variables)
+        gen_g_grads = tape.gradient(gen_g_loss, self.gen_g.trainable_variables)
+        gen_f_grads = tape.gradient(gen_f_loss, self.gen_f.trainable_variables)
 
-        disc_x_grads = tape.gradient(disc_x_loss, self.discriminator_x.trainable_variables)
-        disc_y_grads = tape.gradient(disc_y_loss, self.discriminator_y.trainable_variables)
+        disc_x_grads = tape.gradient(disc_x_loss, self.disc_x.trainable_variables)
+        disc_y_grads = tape.gradient(disc_y_loss, self.disc_y.trainable_variables)
 
         # apply the gradients to the optimizers
         self.gen_g_optimizer.apply_gradients(
-            zip(gen_g_grads, self.generator_g.trainable_variables))
+            zip(gen_g_grads, self.gen_g.trainable_variables))
         self.gen_f_optimizer.apply_gradients(
-            zip(gen_f_grads, self.generator_f.trainable_variables))
+            zip(gen_f_grads, self.gen_f.trainable_variables))
 
         self.disc_x_optimizer.apply_gradients(
-            zip(disc_x_grads, self.discriminator_x.trainable_variables))
+            zip(disc_x_grads, self.disc_x.trainable_variables))
         self.disc_y_optimizer.apply_gradients(
-            zip(disc_y_grads, self.discriminator_y.trainable_variables))
+            zip(disc_y_grads, self.disc_y.trainable_variables))
 
         # update metrics
         self.disc_x_loss_metric.update_state(disc_x_loss)
