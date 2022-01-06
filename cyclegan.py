@@ -11,7 +11,7 @@ class CycleGAN(tf.keras.Model):
         self.gen_f = gen_f
 
     def compile(self, disc_x_optimizer, disc_y_optimizer, gen_g_optimizer,
-                gen_f_optimizer, loss_fn, loss_lambda):
+                gen_f_optimizer, loss_fn, lambda_cyc, lambda_id):
         super().compile()
 
         self.disc_x_optimizer = disc_x_optimizer
@@ -26,7 +26,8 @@ class CycleGAN(tf.keras.Model):
         self.gen_g_loss_metric = tf.keras.metrics.Mean(name='gen_g_loss')
         self.gen_f_loss_metric = tf.keras.metrics.Mean(name='gen_f_loss')
 
-        self.loss_lambda = loss_lambda
+        self.lambda_cyc = lambda_cyc
+        self.lambda_id = lambda_id
 
     @property
     def metrics(self):
@@ -50,12 +51,12 @@ class CycleGAN(tf.keras.Model):
     def cycle_consistency_loss(self, real_image, cycled_image):
         loss = tf.reduce_mean(tf.abs(real_image - cycled_image))
 
-        return self.loss_lambda * loss
+        return self.lambda_cyc * loss
 
     def identity_loss(self, real_image, same_image):
         loss = tf.reduce_mean(tf.abs(real_image - same_image))
 
-        return self.loss_lambda * 0.5 * loss
+        return self.lambda_id * 0.5 * loss
 
     def train_step(self, real_images):
         real_x, real_y = real_images
