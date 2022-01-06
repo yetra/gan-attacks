@@ -31,3 +31,28 @@ class CycleGAN(tf.keras.Model):
     @property
     def metrics(self):
         return [self.d_loss_metric, self.g_loss_metric]
+
+    def generator_loss(self, fake_output):
+        # assume generated images are real
+        return self.loss_fn(tf.ones_like(fake_output), fake_output)
+
+    def discriminator_loss(self, real_output, fake_output):
+        # 1s for real images
+        real_loss = self.loss_fn(tf.ones_like(real_output), real_output)
+
+        # 0s for generated images
+        fake_loss = self.loss_fn(tf.zeros_like(fake_output), fake_output)
+
+        loss = real_loss + fake_loss
+
+        return loss * 0.5
+
+    def cycle_consistency_loss(self, real_image, cycled_image):
+        loss = tf.reduce_mean(tf.abs(real_image - cycled_image))
+
+        return self.loss_lambda * loss
+
+    def identity_loss(self, real_image, same_image):
+        loss = tf.reduce_mean(tf.abs(real_image - same_image))
+
+        return self.loss_lambda * 0.5 * loss
