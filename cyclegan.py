@@ -56,3 +56,78 @@ class CycleGAN(tf.keras.Model):
         loss = tf.reduce_mean(tf.abs(real_image - same_image))
 
         return self.loss_lambda * 0.5 * loss
+
+    def train_step(self, real_images):
+        real_x, real_y = real_images
+
+        with tf.GradientTape(persistent=True) as tape:
+            # G : X -> Y
+            # F : Y -> X
+
+            # X -> G(X) -> F(G(X))
+            fake_y = self.generator_g(real_x, training=True)
+            cycled_x = self.generator_f(fake_y, training=True)
+
+            # Y -> F(Y) -> G(F(Y))
+            fake_x = self.generator_f(real_y, training=True)
+            cycled_y = self.generator_g(fake_x, training=True)
+
+            # for the identity loss:
+            # if the generators get an image from their target domain as input
+            # they should output the same image (or something similar to it)
+            same_x = self.generator_f(real_x, training=True)  # X -> F(X)
+            same_y = self.generator_g(real_y, training=True)  # Y -> G(Y)
+
+            # get predictions from the discriminators
+            disc_real_x = self.discriminator_x(real_x, training=True)
+            disc_real_y = self.discriminator_y(real_y, training=True)
+
+            disc_fake_x = self.discriminator_x(fake_x, training=True)
+            disc_fake_y = self.discriminator_y(fake_y, training=True)
+
+            # generator adversarial loss
+            adv_gen_g_loss = self.generator_loss(disc_fake_y)
+            adv_gen_f_loss = self.generator_loss(disc_fake_x)
+
+            # generator cycle consistency loss
+            cyc_loss = (self.cycle_consistency_loss(real_x, cycled_x)
+                        + self.cycle_consistency_loss(real_y, cycled_y))
+
+            # generator loss = adversarial loss + cycle consistency loss + identity loss
+            gen_g_loss = adv_gen_g_loss + cyc_loss + self.identity_loss(real_y, same_y)
+            gen_f_loss = adv_gen_f_loss + cyc_loss + self.identity_loss(real_x, same_x)
+
+            # discriminator loss
+            disc_x_loss = self.discriminator_loss(disc_real_x, disc_fake_x)
+            disc_y_loss = self.discriminator_loss(disc_real_y, disc_fake_y)
+
+        # calculate the gradients for the generators and discriminators
+        gen_g_grads = tape.gradient(gen_g_loss, self.generator_g.trainable_variables)
+        gen_f_grads = tape.gradient(gen_f_loss, self.generator_f.trainable_variables)
+
+        disc_x_grads = tape.gradient(disc_x_loss, self.discriminator_x.trainable_variables)
+        disc_y_grads = tape.gradient(disc_y_loss, self.discriminator_y.trainable_variables)
+
+        # apply the gradients to the optimizers
+        self.gen_g_optimizer.apply_gradients(
+            zip(gen_g_grads, self.generator_g.trainable_variables))
+        self.gen_f_optimizer.apply_gradients(
+            zip(gen_f_grads, self.generator_f.trainable_variables))
+
+        self.disc_x_optimizer.apply_gradients(
+            zip(disc_x_grads, self.discriminator_x.trainable_variables))
+        self.disc_y_optimizer.apply_gradients(
+            zip(disc_y_grads, self.discriminator_y.trainable_variables))
+
+        # update metrics
+        self.disc_x_loss_metric.update_state(disc_x_loss)
+        self.disc_y_loss_metric.update_state(disc_y_loss)
+        self.gen_g_loss_metric.update_state(gen_g_loss)
+        self.gen_f_loss_metric.update_state(gen_f_loss)
+
+        return {
+            'disc_x_loss': self.disc_x_loss_metric.result(),
+            'disc_y_loss': self.disc_y_loss_metric.result(),
+            'gen_g_loss': self.gen_g_loss_metric.result(),
+            'gen_f_loss': self.gen_f_loss_metric.result(),
+        }
