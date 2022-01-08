@@ -16,10 +16,11 @@ class AdvDCGAN(DCGAN):
 
         self.target = target
 
-    def compile(self, d_optimizer, g_optimizer, loss_fn, adv_loss_fn):
+    def compile(self, d_optimizer, g_optimizer, loss_fn, adv_loss_fn, lambda_adv):
         super().compile(d_optimizer, g_optimizer, loss_fn)
 
         self.adv_loss_fn = adv_loss_fn
+        self.lambda_adv = lambda_adv
 
     def train_step(self, inputs):
         real_images, target_labels = inputs
@@ -39,7 +40,7 @@ class AdvDCGAN(DCGAN):
             fake_output = self.discriminator(adv_images, training=True)
 
             d_loss = self.discriminator_loss(real_output, fake_output)
-            g_loss = self.generator_loss(fake_output) + adv_loss
+            g_loss = self.generator_loss(fake_output) + adv_loss * self.lambda_adv
 
         # calculate the gradients for the generators and discriminators
         d_grads = d_tape.gradient(d_loss, self.discriminator.trainable_variables)
