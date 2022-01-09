@@ -165,7 +165,7 @@ def get_resnet_generator(
 
     # Final block
     x = ReflectionPadding2D(padding=reflection_padding)(x)
-    x = layers.Conv2D(3, kernel_size, padding="valid")(x)
+    x = layers.Conv2D(input_img_size[-1], kernel_size, padding="valid")(x)
     x = layers.Activation("tanh")(x)
 
     model = keras.models.Model(img_input, x, name=name)
