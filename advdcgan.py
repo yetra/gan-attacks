@@ -52,11 +52,7 @@ class AdvDCGAN(DCGAN):
         self.g_optimizer.apply_gradients(
             zip(g_grads, self.generator.trainable_variables))
 
-        # update metrics
-        self.d_loss_metric.update_state(d_loss)
-        self.g_loss_metric.update_state(g_loss)
-
         return {
-            'd_loss': self.d_loss_metric.result(),
-            'g_loss': self.g_loss_metric.result(),
+            'd_loss': d_loss,
+            'g_loss': g_loss,
         }

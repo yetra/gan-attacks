@@ -18,13 +18,6 @@ class DCGAN(keras.Model):
 
         self.loss_fn = loss_fn
 
-        self.d_loss_metric = keras.metrics.Mean(name='d_loss')
-        self.g_loss_metric = keras.metrics.Mean(name='g_loss')
-
-    @property
-    def metrics(self):
-        return [self.d_loss_metric, self.g_loss_metric]
-
     def generator_loss(self, fake_output):
         # assume generated images are real
         return self.loss_fn(tf.ones_like(fake_output), fake_output)
@@ -63,11 +56,7 @@ class DCGAN(keras.Model):
         self.g_optimizer.apply_gradients(
             zip(g_grads, self.generator.trainable_variables))
 
-        # update metrics
-        self.d_loss_metric.update_state(d_loss)
-        self.g_loss_metric.update_state(g_loss)
-
         return {
-            'd_loss': self.d_loss_metric.result(),
-            'g_loss': self.g_loss_metric.result(),
+            'd_loss': d_loss,
+            'g_loss': g_loss,
         }
