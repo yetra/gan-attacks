@@ -136,6 +136,7 @@ def get_resnet_generator(
         input_img_size,
         filters=64,
         kernel_size=(7, 7),
+        reflection_padding=(3, 3),
         num_downsampling_blocks=2,
         num_residual_blocks=9,
         num_upsampling_blocks=2,
@@ -143,7 +144,7 @@ def get_resnet_generator(
         name=None,
 ):
     img_input = layers.Input(shape=input_img_size, name=name + "_img_input")
-    x = ReflectionPadding2D(padding=(3, 3))(img_input)
+    x = ReflectionPadding2D(padding=reflection_padding)(img_input)
     x = layers.Conv2D(filters, kernel_size, kernel_initializer=kernel_init, use_bias=False)(x)
     x = tfa.layers.InstanceNormalization(gamma_initializer=gamma_initializer)(x)
     x = layers.Activation("relu")(x)
@@ -163,7 +164,7 @@ def get_resnet_generator(
         x = upsample(x, filters, activation=layers.Activation("relu"))
 
     # Final block
-    x = ReflectionPadding2D(padding=(3, 3))(x)
+    x = ReflectionPadding2D(padding=reflection_padding)(x)
     x = layers.Conv2D(3, kernel_size, padding="valid")(x)
     x = layers.Activation("tanh")(x)
 
