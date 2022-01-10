@@ -3,11 +3,14 @@ import tensorflow as tf
 from dcgan import DCGAN
 
 
-def carlini_wagner_loss_fn(target_output, target_labels):
-    max_probs = tf.reduce_max(target_output, axis=1)
-    target_label_probs = tf.reduce_max(target_output * target_labels, axis=1)
+def carlini_wagner_loss_fn(target_label):
+    def _carlini_wagner_loss_fn(target_output):
+        max_probs = tf.reduce_max(target_output, axis=1)
+        target_label_probs = target_output[:, target_label]
 
-    return tf.reduce_sum(tf.maximum(max_probs - target_label_probs, 0))
+        return tf.reduce_sum(tf.maximum(max_probs - target_label_probs, 0))
+
+    return _carlini_wagner_loss_fn
 
 
 class AdvDCGAN(DCGAN):
@@ -22,9 +25,7 @@ class AdvDCGAN(DCGAN):
         self.adv_loss_fn = adv_loss_fn
         self.lambda_adv = lambda_adv
 
-    def train_step(self, inputs):
-        real_images, target_labels = inputs
-
+    def train_step(self, real_images):
         # sample random noise in the latent space
         batch_size = tf.shape(real_images)[0]
         noise = tf.random.normal(shape=(batch_size, self.latent_dim))
@@ -34,7 +35,7 @@ class AdvDCGAN(DCGAN):
             adv_images = self.generator(noise, training=True)
 
             target_output = self.target(adv_images)
-            adv_loss = self.adv_loss_fn(target_output, target_labels)
+            adv_loss = self.adv_loss_fn(target_output)
 
             real_output = self.discriminator(real_images, training=True)
             fake_output = self.discriminator(adv_images, training=True)
