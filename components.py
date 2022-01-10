@@ -212,9 +212,12 @@ def get_discriminator(
                 strides=(1, 1),
             )
 
-    x = layers.Conv2D(
-        1, (4, 4), strides=(1, 1), padding="same", kernel_initializer=kernel_initializer
-    )(x)
+    # x = layers.Conv2D(
+    #     1, (4, 4), strides=(1, 1), padding="same", kernel_initializer=kernel_initializer
+    # )(x)
+
+    x = layers.Flatten()(x)
+    x = layers.Dense(1)(x)
 
     model = keras.models.Model(inputs=img_input, outputs=x, name=name)
 
