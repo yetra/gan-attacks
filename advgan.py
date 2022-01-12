@@ -2,8 +2,8 @@ import tensorflow as tf
 
 
 def l2_norm_soft_hinge_loss_fn(bound):
-    def _l2_norm_soft_hinge_loss_fn(adv_images):
-        return tf.reduce_mean(tf.maximum(tf.norm(adv_images, axis=1) - bound, 0))
+    def _l2_norm_soft_hinge_loss_fn(perturbations):
+        return tf.reduce_mean(tf.maximum(tf.norm(perturbations, axis=1) - bound, 0))
 
     return _l2_norm_soft_hinge_loss_fn
 
