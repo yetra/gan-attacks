@@ -1,4 +1,5 @@
 import glob
+import os
 
 import imageio
 import matplotlib.pyplot as plt
@@ -36,20 +37,24 @@ class GANMonitor(tf.keras.callbacks.Callback):
         plt.show()
 
 
-def images_to_gif(image_pattern, gif_path):
+def images_to_gif(image_pattern, gif_path, delete_frames=False):
     """
     Creates a GIF from the images specified with `image_pattern`.
 
     :param image_pattern: filename pattern of the images (GIF frames)
     :param gif_path: path to the GIF
+    :param delete_frames: if `True`, deletes frames after creating the GIF
     """
-    with imageio.get_writer(gif_path, mode='I') as writer:
-        filenames = glob.glob(image_pattern)
-        filenames = sorted(filenames)
+    filenames = sorted(glob.glob(image_pattern))
 
+    with imageio.get_writer(gif_path, mode='I') as writer:
         for filename in filenames:
             image = imageio.imread(filename)
             writer.append_data(image)
 
         image = imageio.imread(filename)
         writer.append_data(image)
+
+    if delete_frames:
+        for filename in filenames:
+            os.remove(filename)
