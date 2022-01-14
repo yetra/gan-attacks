@@ -1,3 +1,16 @@
+"""
+DCGAN (Deep Convolutional Generative Adversarial Network) implementation.
+
+References:
+
+* Keras documentation: DCGAN to generate face images
+  (https://keras.io/examples/generative/dcgan_overriding_train_step/)
+* TensorFlow tutorials: Deep Convolutional Generative Adversarial Network
+  (https://www.tensorflow.org/tutorials/generative/dcgan)
+* Unsupervised representation learning with Deep Convolutional Generative
+  Adversarial Networks (https://arxiv.org/pdf/1511.06434.pdf%C3)
+"""
+
 import tensorflow as tf
 from tensorflow import keras
 
@@ -19,14 +32,10 @@ class DCGAN(keras.Model):
         self.loss_fn = loss_fn
 
     def generator_loss(self, fake_output):
-        # assume generated images are real
         return self.loss_fn(tf.ones_like(fake_output), fake_output)
 
     def discriminator_loss(self, real_output, fake_output):
-        # 1s for real images
         real_loss = self.loss_fn(tf.ones_like(real_output), real_output)
-
-        # 0s for generated images
         fake_loss = self.loss_fn(tf.zeros_like(fake_output), fake_output)
 
         return real_loss + fake_loss
