@@ -1,3 +1,17 @@
+"""
+CycleGAN implementation.
+
+References:
+
+* Keras documentation: CycleGAN
+  (https://keras.io/examples/generative/cyclegan/)
+* TensorFlow tutorials: CycleGAN
+  (https://www.tensorflow.org/tutorials/generative/cyclegan)
+* Unpaired image-to-image translation using cycle-consistent adversarial
+  networks (https://openaccess.thecvf.com/content_ICCV_2017/papers/
+  Zhu_Unpaired_Image-To-Image_Translation_ICCV_2017_paper.pdf)
+"""
+
 import tensorflow as tf
 
 
