@@ -3,16 +3,6 @@ import tensorflow as tf
 from dcgan import DCGAN
 
 
-def carlini_wagner_loss_fn(target_label):
-    def _carlini_wagner_loss_fn(target_output):
-        max_probs = tf.reduce_max(target_output, axis=1)
-        target_label_probs = target_output[:, target_label]
-
-        return tf.reduce_sum(tf.maximum(max_probs - target_label_probs, 0))
-
-    return _carlini_wagner_loss_fn
-
-
 class AdvDCGAN(DCGAN):
     def __init__(self, target, discriminator, generator, latent_dim):
         super().__init__(discriminator, generator, latent_dim)
