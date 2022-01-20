@@ -27,7 +27,8 @@ class AdvDCGAN(DCGAN):
         # train the discriminator and the generator (separately)
         with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
             perturbations = self.generator(noise, training=True)
-            adv_images = real_images + perturbations
+            perturbations = tf.clip_by_value(perturbations, -0.3, 0.3)
+            adv_images = tf.clip_by_value(real_images + perturbations, -1, 1)
 
             target_output = self.target(adv_images)
             adv_loss = self.adv_loss_fn(target_output)
