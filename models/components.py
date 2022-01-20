@@ -20,7 +20,7 @@ def residual_block(
         kernel_initializer=kernel_init,
         kernel_size=(3, 3),
         strides=(1, 1),
-        padding="valid",
+        padding="same",
         gamma_initializer=gamma_init,
         use_bias=False,
 ):
@@ -134,7 +134,7 @@ def get_resnet_generator(
         x = upsample(x, filters, activation=layers.Activation("relu"))
 
     # Final block
-    x = layers.Conv2D(input_img_size[-1], kernel_size, padding="valid")(x)
+    x = layers.Conv2D(input_img_size[-1], kernel_size, padding="same")(x)
     x = layers.Activation("tanh")(x)
 
     model = keras.models.Model(img_input, x, name=name)
