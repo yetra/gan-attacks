@@ -4,7 +4,6 @@ Taken from: https://keras.io/examples/generative/cyclegan/ (slightly modified)
 """
 
 import tensorflow as tf
-import tensorflow.keras as keras
 from keras_contrib.layers import InstanceNormalization
 
 from tensorflow.keras import layers
@@ -137,9 +136,7 @@ def get_resnet_generator(
     x = layers.Conv2D(input_img_size[-1], kernel_size, padding="same")(x)
     x = layers.Activation("tanh")(x)
 
-    model = keras.models.Model(img_input, x, name=name)
-
-    return model
+    return tf.keras.Model(img_input, x, name=name)
 
 
 def get_discriminator(
@@ -188,6 +185,4 @@ def get_discriminator(
     x = layers.Flatten()(x)
     x = layers.Dense(1)(x)
 
-    model = keras.models.Model(inputs=img_input, outputs=x, name=name)
-
-    return model
+    return tf.keras.Model(img_input, x, name=name)
