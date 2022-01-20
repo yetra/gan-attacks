@@ -38,9 +38,9 @@ class AdvDCGAN(DCGAN):
             real_output = self.discriminator(real_images, training=True)
             fake_output = self.discriminator(adv_images, training=True)
 
-            d_loss = self.discriminator_loss(real_output, fake_output)
+            d_loss = self.discriminator_loss_fn(real_output, fake_output)
 
-            g_gan_loss = self.generator_loss(fake_output)
+            g_gan_loss = self.generator_loss_fn(fake_output)
             g_loss = g_gan_loss + adv_loss * self.lambda_adv + perturb_loss * self.lambda_perturb
 
         # calculate the gradients for the generators and discriminators

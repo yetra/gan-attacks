@@ -31,10 +31,10 @@ class DCGAN(keras.Model):
 
         self.loss_fn = loss_fn
 
-    def generator_loss(self, fake_output):
+    def generator_loss_fn(self, fake_output):
         return self.loss_fn(tf.ones_like(fake_output), fake_output)
 
-    def discriminator_loss(self, real_output, fake_output):
+    def discriminator_loss_fn(self, real_output, fake_output):
         real_loss = self.loss_fn(tf.ones_like(real_output), real_output)
         fake_loss = self.loss_fn(tf.zeros_like(fake_output), fake_output)
 
@@ -52,8 +52,8 @@ class DCGAN(keras.Model):
             real_output = self.discriminator(real_images, training=True)
             fake_output = self.discriminator(generated_images, training=True)
 
-            d_loss = self.discriminator_loss(real_output, fake_output)
-            g_loss = self.generator_loss(fake_output)
+            d_loss = self.discriminator_loss_fn(real_output, fake_output)
+            g_loss = self.generator_loss_fn(fake_output)
 
         # calculate the gradients for the generators and discriminators
         d_grads = d_tape.gradient(d_loss, self.discriminator.trainable_variables)

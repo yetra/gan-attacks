@@ -47,10 +47,10 @@ class AdvGAN(tf.keras.Model):
 
         self.perturb_bound = perturb_bound
 
-    def generator_loss(self, fake_output):
+    def generator_loss_fn(self, fake_output):
         return self.loss_fn(tf.ones_like(fake_output), fake_output)
 
-    def discriminator_loss(self, real_output, fake_output):
+    def discriminator_loss_fn(self, real_output, fake_output):
         real_loss = self.loss_fn(tf.ones_like(real_output), real_output)
         fake_loss = self.loss_fn(tf.zeros_like(fake_output), fake_output)
 
@@ -86,10 +86,10 @@ class AdvGAN(tf.keras.Model):
             fake_output = self.discriminator(adv_images, training=True)
 
             # discriminator loss
-            d_loss = self.discriminator_loss(real_output, fake_output)
+            d_loss = self.discriminator_loss_fn(real_output, fake_output)
 
             # generator loss
-            g_gan_loss = self.generator_loss(fake_output)
+            g_gan_loss = self.generator_loss_fn(fake_output)
             g_loss = adv_loss + g_gan_loss * self.lambda_gan + perturb_loss * self.lambda_perturb
 
         # calculate the gradients for the generators and discriminators

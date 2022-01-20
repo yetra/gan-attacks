@@ -49,20 +49,14 @@ class CycleGAN(tf.keras.Model):
     def metrics(self):
         return [self.d_loss_metric, self.g_loss_metric]
 
-    def generator_loss(self, fake_output):
-        # assume generated images are real
+    def generator_loss_fn(self, fake_output):
         return self.loss_fn(tf.ones_like(fake_output), fake_output)
 
-    def discriminator_loss(self, real_output, fake_output):
-        # 1s for real images
+    def discriminator_loss_fn(self, real_output, fake_output):
         real_loss = self.loss_fn(tf.ones_like(real_output), real_output)
-
-        # 0s for generated images
         fake_loss = self.loss_fn(tf.zeros_like(fake_output), fake_output)
 
-        loss = real_loss + fake_loss
-
-        return loss * 0.5
+        return (real_loss + fake_loss) * 0.5
 
     def train_step(self, real_images):
         real_x, real_y = real_images
@@ -93,8 +87,8 @@ class CycleGAN(tf.keras.Model):
             disc_fake_y = self.disc_y(fake_y, training=True)
 
             # generator loss components
-            gen_g_adv_loss = self.generator_loss(disc_fake_y)
-            gen_f_adv_loss = self.generator_loss(disc_fake_x)
+            gen_g_adv_loss = self.generator_loss_fn(disc_fake_y)
+            gen_f_adv_loss = self.generator_loss_fn(disc_fake_x)
 
             gen_g_cyc_loss = self.cycle_consistency_loss_fn(real_y, cycled_y) * self.lambda_cyc
             gen_f_cyc_loss = self.cycle_consistency_loss_fn(real_x, cycled_x) * self.lambda_cyc
@@ -107,8 +101,8 @@ class CycleGAN(tf.keras.Model):
             gen_f_loss = gen_f_adv_loss + gen_f_cyc_loss + gen_f_id_loss
 
             # discriminator loss
-            disc_x_loss = self.discriminator_loss(disc_real_x, disc_fake_x)
-            disc_y_loss = self.discriminator_loss(disc_real_y, disc_fake_y)
+            disc_x_loss = self.discriminator_loss_fn(disc_real_x, disc_fake_x)
+            disc_y_loss = self.discriminator_loss_fn(disc_real_y, disc_fake_y)
 
         # calculate the gradients for the generators and discriminators
         gen_g_grads = tape.gradient(gen_g_loss, self.gen_g.trainable_variables)
