@@ -11,7 +11,17 @@ import tensorflow as tf
 
 
 class AdvGAN(tf.keras.Model):
+    """A GAN model for generating adversarial examples."""
+
     def __init__(self, target, discriminator, generator, latent_dim=None):
+        """
+        Inits the `AdvGAN` model.
+
+        :param target: the target model of the adversarial attacks
+        :param discriminator: the discriminator model
+        :param generator: the generator model
+        :param latent_dim: the size of the latent space vector (for DCGAN-based generators)
+        """
         super().__init__()
 
         self.target = target
