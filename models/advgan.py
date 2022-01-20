@@ -10,7 +10,7 @@ class AdvGAN(tf.keras.Model):
         self.generator = generator
 
     def compile(self, d_optimizer, g_optimizer, loss_fn, adv_loss_fn,
-                perturb_loss_fn, lambda_gan, lambda_perturb):
+                perturb_loss_fn, lambda_gan, lambda_perturb, perturb_bound=None):
         super().compile()
 
         self.d_optimizer = d_optimizer
@@ -23,6 +23,8 @@ class AdvGAN(tf.keras.Model):
 
         self.lambda_gan = lambda_gan
         self.lambda_perturb = lambda_perturb
+
+        self.perturb_bound = perturb_bound
 
     def generator_loss(self, fake_output):
         return self.loss_fn(tf.ones_like(fake_output), fake_output)
@@ -37,7 +39,13 @@ class AdvGAN(tf.keras.Model):
         # train the discriminator and the generator (separately)
         with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
             perturbations = self.generator(real_images, training=True)
-            # perturbations = tf.clip_by_value(perturbations, -0.3, 0.3)
+
+            # clip the perturbations to [-perturb_bound, perturb_bound]
+            if self.perturb_bound:
+                perturbations = tf.clip_by_value(
+                    perturbations, -self.perturb_bound, self.perturb_bound)
+
+            # ensure adv_images are in [-1, 1]
             adv_images = tf.clip_by_value(real_images + perturbations, -1, 1)
 
             target_output = self.target(adv_images)
