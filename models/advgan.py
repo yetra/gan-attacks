@@ -1,3 +1,12 @@
+"""
+AdvGAN implementation.
+
+References:
+
+* Generating Adversarial Examples with Adversarial Networks
+  (https://arxiv.org/abs/1801.02610)
+"""
+
 import tensorflow as tf
 
 
