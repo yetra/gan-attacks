@@ -48,6 +48,7 @@ class AdvGAN(tf.keras.Model):
             # ensure adv_images are in [-1, 1]
             adv_images = tf.clip_by_value(real_images + perturbations, -1, 1)
 
+            # calculate the loss components
             target_output = self.target(adv_images)
             adv_loss = self.adv_loss_fn(target_output)
 
@@ -56,8 +57,10 @@ class AdvGAN(tf.keras.Model):
             real_output = self.discriminator(real_images, training=True)
             fake_output = self.discriminator(adv_images, training=True)
 
+            # discriminator loss
             d_loss = self.discriminator_loss(real_output, fake_output)
 
+            # generator loss
             g_gan_loss = self.generator_loss(fake_output)
             g_loss = adv_loss + g_gan_loss * self.lambda_gan + perturb_loss * self.lambda_perturb
 
