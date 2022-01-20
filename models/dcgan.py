@@ -15,7 +15,16 @@ import tensorflow as tf
 
 
 class DCGAN(tf.keras.Model):
+    """DCGAN (Deep Convolutional Generative Adversarial Network) implementation."""
+    
     def __init__(self, discriminator, generator, latent_dim):
+        """
+        Inits the `DCGAN` model.
+
+        :param discriminator: the discriminator model
+        :param generator: the generator model
+        :param latent_dim: size of the latent space vector (for DCGAN-based generators)
+        """
         super().__init__()
 
         self.discriminator = discriminator
