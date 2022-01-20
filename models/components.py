@@ -4,8 +4,8 @@ Taken from: https://keras.io/examples/generative/cyclegan/ (slightly modified)
 """
 
 import tensorflow as tf
-import tensorflow_addons as tfa
 import tensorflow.keras as keras
+from keras_contrib.layers import InstanceNormalization
 
 from tensorflow.keras import layers
 
@@ -35,7 +35,7 @@ def residual_block(
         padding=padding,
         use_bias=use_bias,
     )(x)
-    x = tfa.layers.InstanceNormalization(gamma_initializer=gamma_initializer)(x)
+    x = InstanceNormalization(gamma_initializer=gamma_initializer)(x)
     x = activation(x)
 
     x = layers.Conv2D(
@@ -46,7 +46,7 @@ def residual_block(
         padding=padding,
         use_bias=use_bias,
     )(x)
-    x = tfa.layers.InstanceNormalization(gamma_initializer=gamma_initializer)(x)
+    x = InstanceNormalization(gamma_initializer=gamma_initializer)(x)
     x = layers.add([input_tensor, x])
 
     return x
@@ -71,7 +71,7 @@ def downsample(
         padding=padding,
         use_bias=use_bias,
     )(x)
-    x = tfa.layers.InstanceNormalization(gamma_initializer=gamma_initializer)(x)
+    x = InstanceNormalization(gamma_initializer=gamma_initializer)(x)
     if activation:
         x = activation(x)
 
@@ -97,7 +97,7 @@ def upsample(
         kernel_initializer=kernel_initializer,
         use_bias=use_bias,
     )(x)
-    x = tfa.layers.InstanceNormalization(gamma_initializer=gamma_initializer)(x)
+    x = InstanceNormalization(gamma_initializer=gamma_initializer)(x)
     if activation:
         x = activation(x)
 
@@ -116,7 +116,7 @@ def get_resnet_generator(
 ):
     img_input = layers.Input(shape=input_img_size, name=name + "_img_input")
     x = layers.Conv2D(filters, kernel_size, kernel_initializer=kernel_init, use_bias=False)(img_input)
-    x = tfa.layers.InstanceNormalization(gamma_initializer=gamma_initializer)(x)
+    x = InstanceNormalization(gamma_initializer=gamma_initializer)(x)
     x = layers.Activation("relu")(x)
 
     # Downsampling
