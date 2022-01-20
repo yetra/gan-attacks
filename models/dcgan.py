@@ -12,10 +12,9 @@ References:
 """
 
 import tensorflow as tf
-from tensorflow import keras
 
 
-class DCGAN(keras.Model):
+class DCGAN(tf.keras.Model):
     def __init__(self, discriminator, generator, latent_dim):
         super().__init__()
 
