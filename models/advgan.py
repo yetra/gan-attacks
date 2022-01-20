@@ -2,12 +2,14 @@ import tensorflow as tf
 
 
 class AdvGAN(tf.keras.Model):
-    def __init__(self, target, discriminator, generator):
+    def __init__(self, target, discriminator, generator, latent_dim=None):
         super().__init__()
 
         self.target = target
         self.discriminator = discriminator
         self.generator = generator
+
+        self.latent_dim = latent_dim
 
     def compile(self, d_optimizer, g_optimizer, loss_fn, adv_loss_fn,
                 perturb_loss_fn, lambda_gan, lambda_perturb, perturb_bound=None):
@@ -36,9 +38,16 @@ class AdvGAN(tf.keras.Model):
         return (real_loss + fake_loss) * 0.5
 
     def train_step(self, real_images):
-        # train the discriminator and the generator (separately)
+        generator_input = real_images
+
+        # sample random noise in the latent space (for DCGAN-based generators)
+        if self.latent_dim:
+            batch_size = tf.shape(real_images)[0]
+            generator_input = tf.random.normal(shape=(batch_size, self.latent_dim))
+
+        # train the discriminator and the generator for 1 step (separately)
         with tf.GradientTape() as d_tape, tf.GradientTape() as g_tape:
-            perturbations = self.generator(real_images, training=True)
+            perturbations = self.generator(generator_input, training=True)
 
             # clip the perturbations to [-perturb_bound, perturb_bound]
             if self.perturb_bound:
