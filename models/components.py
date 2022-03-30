@@ -242,3 +242,32 @@ def get_speech_commands_adv_generator(
         )
 
     return tf.keras.Model(audio_input, d[-1])
+
+
+def get_speech_commands_adv_discriminator(
+        input_audio_shape,
+        filters=(32, 64, 64, 128, 128, 256, 256, 512, 512, 1024, 2048)
+):
+    audio_input = layers.Input(shape=input_audio_shape)
+
+    x = layers.Conv1D(
+        filters[0],
+        kernel_size=31,
+        strides=2,
+        padding='same',
+        activation=layers.LeakyReLU(0.2)
+    )(audio_input)
+
+    for f in filters[1:]:
+        x = layers.BatchNormalization()(x)
+        x = layers.Conv1D(
+            f,
+            kernel_size=31,
+            strides=2,
+            padding='same',
+            activation=layers.LeakyReLU(0.2)
+        )(x)
+
+    x = layers.Dense(1)(x)
+
+    return tf.keras.Model(audio_input, x)
