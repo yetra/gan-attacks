@@ -188,34 +188,57 @@ def get_discriminator(
     return tf.keras.Model(img_input, x, name=name)
 
 
-def get_speech_commands_adv_generator(input_audio_size):
+def get_speech_commands_adv_generator(
+        input_audio_size,
+        encoder_filters=(16, 32, 32, 64, 64, 128, 128, 256),
+        decoder_filters=(128, 128, 64, 64, 32, 32, 16, 1)
+):
     audio_input = layers.Input(shape=input_audio_size)
 
-    e1 = layers.Conv1D(16, kernel_size=32, strides=2, activation='PReLU')(audio_input)
-    e2 = layers.Conv1D(32, kernel_size=32, strides=2, activation='PReLU')(e1)
-    e3 = layers.Conv1D(32, kernel_size=32, strides=2, activation='PReLU')(e2)
-    e4 = layers.Conv1D(64, kernel_size=32, strides=2, activation='PReLU')(e3)
-    e5 = layers.Conv1D(64, kernel_size=32, strides=2, activation='PReLU')(e4)
-    e6 = layers.Conv1D(128, kernel_size=32, strides=2, activation='PReLU')(e5)
-    e7 = layers.Conv1D(128, kernel_size=32, strides=2, activation='PReLU')(e6)
-    e8 = layers.Conv1D(256, kernel_size=32, strides=2, activation='PReLU')(e7)
+    # encoder
+    e = [
+        layers.Conv1D(
+            encoder_filters[0],
+            kernel_size=32,
+            strides=2,
+            padding='same',
+            activation='PReLU'
+        )(audio_input)
+    ]
 
-    s = layers.add([e8, e7])  # skip connection
-    d8 = layers.Conv1DTranspose(128, kernel_size=32, strides=2, activation='PReLU')(s)
-    s = layers.add([d8, e6])  # skip connection
-    d7 = layers.Conv1DTranspose(128, kernel_size=32, strides=2, activation='PReLU')(s)
-    s = layers.add([d7, e5])  # skip connection
-    d6 = layers.Conv1DTranspose(64, kernel_size=32, strides=2, activation='PReLU')(s)
-    s = layers.add([d6, e4])  # skip connection
-    d5 = layers.Conv1DTranspose(64, kernel_size=32, strides=2, activation='PReLU')(s)
-    s = layers.add([d5, e3])  # skip connection
-    d4 = layers.Conv1DTranspose(32, kernel_size=32, strides=2, activation='PReLU')(s)
-    s = layers.add([d4, e2])  # skip connection
-    d3 = layers.Conv1DTranspose(32, kernel_size=32, strides=2, activation='PReLU')(s)
-    s = layers.add([d3, e1])  # skip connection
-    d2 = layers.Conv1DTranspose(16, kernel_size=32, strides=2, activation='PReLU')(s)
+    for i, filters in enumerate(encoder_filters[1:]):
+        e.append(
+            layers.Conv1D(
+                filters,
+                kernel_size=32,
+                strides=2,
+                padding='same',
+                activation='PReLU'
+            )(e[i])
+        )
 
-    d1 = layers.Conv1DTranspose(1, kernel_size=32, strides=2, activation='tanh')(d2)
+    # decoder
+    d = [
+        layers.Conv1DTranspose(
+            decoder_filters[0],
+            kernel_size=32,
+            strides=2,
+            padding='same',
+            activation='PReLU'
+        )(e[-1])
+    ]
 
-    return tf.keras.Model(audio_input, d1)
+    for i, filters in enumerate(decoder_filters[1:]):
+        skip_connection = layers.add([d[i], e[-(i + 2)]])
+        activation = 'PReLU' if i != len(decoder_filters) - 2 else 'tanh'
+        d.append(
+            layers.Conv1DTranspose(
+                filters,
+                kernel_size=32,
+                strides=2,
+                padding='same',
+                activation=activation
+            )(skip_connection)
+        )
 
+    return tf.keras.Model(audio_input, d[-1])
