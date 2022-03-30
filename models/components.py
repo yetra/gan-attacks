@@ -186,3 +186,36 @@ def get_discriminator(
     x = layers.Dense(1)(x)
 
     return tf.keras.Model(img_input, x, name=name)
+
+
+def get_speech_commands_adv_generator(input_audio_size):
+    audio_input = layers.Input(shape=input_audio_size)
+
+    e1 = layers.Conv1D(16, kernel_size=32, strides=2, activation='PReLU')(audio_input)
+    e2 = layers.Conv1D(32, kernel_size=32, strides=2, activation='PReLU')(e1)
+    e3 = layers.Conv1D(32, kernel_size=32, strides=2, activation='PReLU')(e2)
+    e4 = layers.Conv1D(64, kernel_size=32, strides=2, activation='PReLU')(e3)
+    e5 = layers.Conv1D(64, kernel_size=32, strides=2, activation='PReLU')(e4)
+    e6 = layers.Conv1D(128, kernel_size=32, strides=2, activation='PReLU')(e5)
+    e7 = layers.Conv1D(128, kernel_size=32, strides=2, activation='PReLU')(e6)
+    e8 = layers.Conv1D(256, kernel_size=32, strides=2, activation='PReLU')(e7)
+
+    s = layers.add([e8, e7])  # skip connection
+    d8 = layers.Conv1DTranspose(128, kernel_size=32, strides=2, activation='PReLU')(s)
+    s = layers.add([d8, e6])  # skip connection
+    d7 = layers.Conv1DTranspose(128, kernel_size=32, strides=2, activation='PReLU')(s)
+    s = layers.add([d7, e5])  # skip connection
+    d6 = layers.Conv1DTranspose(64, kernel_size=32, strides=2, activation='PReLU')(s)
+    s = layers.add([d6, e4])  # skip connection
+    d5 = layers.Conv1DTranspose(64, kernel_size=32, strides=2, activation='PReLU')(s)
+    s = layers.add([d5, e3])  # skip connection
+    d4 = layers.Conv1DTranspose(32, kernel_size=32, strides=2, activation='PReLU')(s)
+    s = layers.add([d4, e2])  # skip connection
+    d3 = layers.Conv1DTranspose(32, kernel_size=32, strides=2, activation='PReLU')(s)
+    s = layers.add([d3, e1])  # skip connection
+    d2 = layers.Conv1DTranspose(16, kernel_size=32, strides=2, activation='PReLU')(s)
+
+    d1 = layers.Conv1DTranspose(1, kernel_size=32, strides=2, activation='tanh')(d2)
+
+    return tf.keras.Model(audio_input, d1)
+
