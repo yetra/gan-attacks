@@ -189,11 +189,11 @@ def get_discriminator(
 
 
 def get_speech_commands_adv_generator(
-        input_audio_size,
+        input_audio_shape,
         encoder_filters=(16, 32, 32, 64, 64, 128, 128, 256),
         decoder_filters=(128, 128, 64, 64, 32, 32, 16, 1)
 ):
-    audio_input = layers.Input(shape=input_audio_size)
+    audio_input = layers.Input(shape=input_audio_shape)
 
     # encoder
     e = [
