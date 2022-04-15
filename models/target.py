@@ -42,13 +42,20 @@ class SpeechCommandsTarget(tf.keras.Model):
             layers.Input(shape=input_shape),
             layers.Resizing(32, 32),
             layers.BatchNormalization(),
-            layers.Conv2D(32, 3, activation='relu'),
-            layers.Conv2D(64, 3, activation='relu'),
+
+            layers.Conv2D(32, 3),
+            layers.ReLU(),
+            layers.Conv2D(64, 3),
+            layers.ReLU(),
             layers.MaxPooling2D(),
             layers.Dropout(0.25),
+
             layers.Flatten(),
-            layers.Dense(128, activation='relu'),
+
+            layers.Dense(128),
+            layers.ReLU(),
             layers.Dropout(0.5),
+
             layers.Dense(num_labels),
         ])
 
