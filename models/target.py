@@ -34,6 +34,15 @@ class MNISTConvTarget(tf.keras.Model):
 
 
 class SpeechCommandsTarget(tf.keras.Model):
+    """
+    A CNN-based model for classifying 2D transformations of SpeechCommands
+    audio samples.
+
+    References:
+
+    * Simple audio recognition: Recognizing keywords
+      (https://www.tensorflow.org/tutorials/audio/simple_audio)
+    """
 
     def __init__(self, input_shape, num_labels=10):
         super().__init__()
