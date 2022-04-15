@@ -4,6 +4,8 @@ Taken from: https://keras.io/examples/generative/cyclegan/ (slightly modified)
 """
 
 import tensorflow as tf
+import tensorflow_io as tfio
+
 from keras_contrib.layers import InstanceNormalization
 
 from tensorflow.keras import layers
@@ -11,6 +13,31 @@ from tensorflow.keras import layers
 
 kernel_init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)
 gamma_init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)
+
+
+def to_spectrogram(audio):
+    """Maps a 1D audio sample to a spectrogram."""
+    spectrogram = tfio.audio.spectrogram(
+        audio,
+        nfft=None,
+        window=255,
+        stride=128
+    )
+
+    # add channels axis
+    spectrogram = spectrogram[..., tf.newaxis]
+
+    return spectrogram
+
+
+class Spectrogram(layers.Layer):
+    """A custom layer for converting audio inputs to spectrograms."""
+
+    def __init__(self):
+        super().__init__()
+
+    def call(self, inputs, *args, **kwargs):
+        return tf.map_fn(to_spectrogram, inputs)
 
 
 def residual_block(
