@@ -35,13 +35,13 @@ class MNISTConvTarget(tf.keras.Model):
 
 class SpeechCommandsTarget(tf.keras.Model):
 
-    def __init__(self, norm_layer, input_shape, num_labels=10):
+    def __init__(self, input_shape, num_labels=10):
         super().__init__()
 
         self.model = tf.keras.Sequential([
             layers.Input(shape=input_shape),
             layers.Resizing(32, 32),
-            norm_layer,
+            layers.BatchNormalization(),
             layers.Conv2D(32, 3, activation='relu'),
             layers.Conv2D(64, 3, activation='relu'),
             layers.MaxPooling2D(),
