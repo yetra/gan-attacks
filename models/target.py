@@ -72,7 +72,7 @@ class SCConvTarget(tf.keras.Model):
       (https://www.tensorflow.org/tutorials/audio/simple_audio)
     """
 
-    def __init__(self, num_labels=10):
+    def __init__(self, num_classes=10):
         super().__init__()
 
         self.model = tf.keras.Sequential([
@@ -92,7 +92,7 @@ class SCConvTarget(tf.keras.Model):
             layers.ReLU(),
             layers.Dropout(0.5),
 
-            layers.Dense(num_labels),
+            layers.Dense(num_classes),
         ])
 
     def call(self, inputs, training=None, mask=None):
