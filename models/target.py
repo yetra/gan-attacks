@@ -7,7 +7,7 @@ from tensorflow.keras import layers
 class MNISTConvTarget(tf.keras.Model):
     """A CNN-based model for classifying MNIST images."""
 
-    def __init__(self):
+    def __init__(self, num_classes=10):
         super().__init__()
 
         self.model = tf.keras.Sequential([
@@ -28,7 +28,7 @@ class MNISTConvTarget(tf.keras.Model):
             layers.Dense(128),
             layers.ReLU(),
             layers.Dropout(0.4),
-            layers.Dense(10),
+            layers.Dense(num_classes),
             layers.Softmax()
         ])
 
