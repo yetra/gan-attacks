@@ -1,6 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
+from components import Spectrogram
+
 
 class MNISTConvTarget(tf.keras.Model):
     """A CNN-based model for classifying MNIST images."""
@@ -33,7 +35,7 @@ class MNISTConvTarget(tf.keras.Model):
         return self.model(inputs)
 
 
-class SpeechCommandsTarget(tf.keras.Model):
+class SCConvTarget(tf.keras.Model):
     """
     A CNN-based model for classifying 2D transformations of SpeechCommands
     audio samples.
