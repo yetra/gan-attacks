@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorflow_io as tfio
 
 from tensorflow.keras import layers
 
@@ -34,31 +33,6 @@ class MNISTConvTarget(tf.keras.Model):
 
     def call(self, inputs, training=None, mask=None):
         return self.model(inputs)
-
-
-def to_spectrogram(audio):
-    """Maps a 1D audio sample to a spectrogram."""
-    spectrogram = tfio.audio.spectrogram(
-        audio,
-        nfft=None,
-        window=255,
-        stride=128
-    )
-
-    # add channels axis
-    spectrogram = spectrogram[..., tf.newaxis]
-
-    return spectrogram
-
-
-class Spectrogram(layers.Layer):
-    """A custom layer for converting audio inputs to spectrograms."""
-
-    def __init__(self):
-        super().__init__()
-
-    def call(self, inputs, *args, **kwargs):
-        return tf.map_fn(to_spectrogram, inputs)
 
 
 class SCConvTarget(tf.keras.Model):
