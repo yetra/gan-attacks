@@ -29,7 +29,8 @@ class MNISTConvTarget(tf.keras.Model):
             layers.ReLU(),
             layers.Dropout(0.4),
             layers.Dense(10),
-            layers.Softmax()])
+            layers.Softmax()
+        ])
 
     def call(self, inputs, training=None, mask=None):
         return self.model(inputs)
@@ -71,11 +72,10 @@ class SCConvTarget(tf.keras.Model):
       (https://www.tensorflow.org/tutorials/audio/simple_audio)
     """
 
-    def __init__(self, input_shape, num_labels=10):
+    def __init__(self, num_labels=10):
         super().__init__()
 
         self.model = tf.keras.Sequential([
-            layers.Input(shape=input_shape),
             layers.Resizing(32, 32),
             layers.BatchNormalization(),
 
