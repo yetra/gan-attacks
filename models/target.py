@@ -72,8 +72,18 @@ class SCConvTarget(tf.keras.Model):
       (https://www.tensorflow.org/tutorials/audio/simple_audio)
     """
 
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=10, transform_fn=None):
+        """
+        Inits the SCConvTarget model.
+
+        :param num_classes: the number of model outputs
+        :param transform_fn: a function for transforming inputs before
+                             passing them through the model (e.g. if they
+                             are 1D tensors)
+        """
         super().__init__()
+
+        self.transform_fn = transform_fn
 
         self.model = tf.keras.Sequential([
             layers.Resizing(32, 32),
