@@ -65,6 +65,10 @@ class SCConvTarget(tf.keras.Model):
 
             layers.Conv2D(32, 3),
             layers.ReLU(),
+            layers.Conv2D(32, 3),
+            layers.ReLU(),
+            layers.Conv2D(64, 3),
+            layers.ReLU(),
             layers.Conv2D(64, 3),
             layers.ReLU(),
             layers.MaxPooling2D(),
@@ -75,7 +79,6 @@ class SCConvTarget(tf.keras.Model):
             layers.Dense(128),
             layers.ReLU(),
             layers.Dropout(0.5),
-
             layers.Dense(num_classes),
         ])
 
