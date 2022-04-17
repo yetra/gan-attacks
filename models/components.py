@@ -271,3 +271,41 @@ def get_speech_commands_adv_discriminator(
     x = layers.Dense(1)(x)
 
     return tf.keras.Model(audio_input, x)
+
+
+def get_wavegan_generator(
+    latent_dim,
+    num_channels=1,
+    kernel_size=25,
+    dim=64,
+    num_upsampling_blocks=4
+):
+    dim_mul = 16
+
+    z = layers.Input(shape=latent_dim)
+
+    x = layers.Dense(4 * 4 * dim * dim_mul)(z)
+    x = layers.Reshape((16, dim * dim_mul))(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.ReLU()(x)
+
+    for _ in range(num_upsampling_blocks):
+        dim_mul //= 2
+        x = layers.Conv1DTranspose(
+            dim * dim_mul,
+            kernel_size,
+            strides=4,
+            padding='same'
+        )(x)
+        x = layers.BatchNormalization()(x)
+        x = layers.ReLU()(x)
+
+    x = layers.Conv1DTranspose(
+        num_channels,
+        kernel_size,
+        strides=4,
+        padding='same'
+    )(x)
+    x = layers.Activation('tanh')(x)
+
+    return tf.keras.Model(z, x)
