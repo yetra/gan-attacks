@@ -309,3 +309,38 @@ def get_wavegan_generator(
     x = layers.Activation('tanh')(x)
 
     return tf.keras.Model(z, x)
+
+
+def get_wavegan_discriminator(
+    input_audio_shape,
+    kernel_size=25,
+    dim=64,
+    num_downsampling_blocks=4
+):
+    dim_mul = 1
+
+    audio_input = layers.Input(shape=input_audio_shape)
+
+    x = layers.Conv1D(
+        dim,
+        kernel_size,
+        strides=4,
+        padding='same'
+    )(audio_input)
+    x = layers.LeakyReLU(0.2)(x)
+
+    for _ in range(num_downsampling_blocks):
+        dim_mul *= 2
+        x = layers.Conv1D(
+            dim_mul * dim,
+            kernel_size,
+            strides=4,
+            padding='same'
+        )(x)
+        x = layers.BatchNormalization()(x)
+        x = layers.LeakyReLU(0.2)(x)
+
+    x = layers.Flatten()(x)
+    x = layers.Dense(1)(x)
+
+    return tf.keras.Model(audio_input, x)
