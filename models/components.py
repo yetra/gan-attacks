@@ -257,9 +257,9 @@ def get_speech_commands_adv_discriminator(
         padding='same',
         activation=layers.LeakyReLU(0.2)
     )(audio_input)
+    x = layers.BatchNormalization()(x)
 
     for f in filters[1:]:
-        x = layers.BatchNormalization()(x)
         x = layers.Conv1D(
             f,
             kernel_size=31,
@@ -267,7 +267,16 @@ def get_speech_commands_adv_discriminator(
             padding='same',
             activation=layers.LeakyReLU(0.2)
         )(x)
+        x = layers.BatchNormalization()(x)
 
+    x = layers.Conv1D(
+        1,
+        kernel_size=1,
+        strides=1,
+        activation=layers.LeakyReLU(0.2)
+    )(x)
+
+    x = layers.Flatten()(x)
     x = layers.Dense(1)(x)
 
     return tf.keras.Model(audio_input, x)
