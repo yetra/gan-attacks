@@ -80,6 +80,7 @@ class SCConvTarget(tf.keras.Model):
             layers.ReLU(),
             layers.Dropout(0.5),
             layers.Dense(num_classes),
+            layers.Softmax()
         ])
 
     def call(self, inputs, training=None, mask=None):
