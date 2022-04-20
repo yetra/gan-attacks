@@ -85,6 +85,6 @@ class SCConvTarget(tf.keras.Model):
 
     def call(self, inputs, training=None, mask=None):
         if self.transform_fn:
-            inputs = tf.map_fn(self.transform_fn, inputs)
+            inputs = self.transform_fn(inputs)
 
         return self.model(inputs)
