@@ -310,7 +310,7 @@ def get_wavegan_generator(
     x = layers.Conv1DTranspose(
         num_channels,
         kernel_size,
-        strides=4,
+        strides=2,
         padding='same'
     )(x)
     x = layers.Activation('tanh')(x)
