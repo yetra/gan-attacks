@@ -321,15 +321,15 @@ def get_wavegan_generator(
 def get_wavegan_discriminator(
     input_audio_shape,
     kernel_size=25,
-    dim=64,
+    dim=32,
     num_downsampling_blocks=4
 ):
-    dim_mul = 1
+    dim_mul = 2
 
     audio_input = layers.Input(shape=input_audio_shape)
 
     x = layers.Conv1D(
-        dim,
+        dim * dim_mul,
         kernel_size,
         strides=4,
         padding='same'
