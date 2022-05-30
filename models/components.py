@@ -286,7 +286,7 @@ def get_wavegan_generator(
     latent_dim,
     num_channels=1,
     kernel_size=25,
-    dim=64,
+    dim=32,
     num_upsampling_blocks=4
 ):
     dim_mul = 16
