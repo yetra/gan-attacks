@@ -295,7 +295,6 @@ def get_wavegan_generator(
 
     x = layers.Dense(4 * 4 * dim * dim_mul)(z)
     x = layers.Reshape((16, dim * dim_mul))(x)
-    x = layers.BatchNormalization()(x)
     x = layers.ReLU()(x)
 
     for _ in range(num_upsampling_blocks):
@@ -306,7 +305,6 @@ def get_wavegan_generator(
             strides=4,
             padding='same'
         )(x)
-        x = layers.BatchNormalization()(x)
         x = layers.ReLU()(x)
 
     x = layers.Conv1DTranspose(
@@ -346,7 +344,6 @@ def get_wavegan_discriminator(
             strides=4,
             padding='same'
         )(x)
-        x = layers.BatchNormalization()(x)
         x = layers.LeakyReLU(0.2)(x)
 
     x = layers.Flatten()(x)
