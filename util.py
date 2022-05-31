@@ -199,6 +199,7 @@ def plot_confusion_matrix(true_labels, predicted_labels, classes, ignore_idx=Non
     cm_df = pd.DataFrame(cm_norm, index=classes, columns=classes)
 
     plt.figure(figsize=(8, 8))
+    plt.tick_params(left=True, bottom=True)
 
     sns.set(rc={'axes.facecolor': '#03051A'})
     sns.heatmap(cm_df, annot=True, vmin=0, vmax=1)
