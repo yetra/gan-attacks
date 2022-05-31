@@ -65,7 +65,7 @@ class ImageAdvGANCallback(tf.keras.callbacks.Callback):
 
         plt.tight_layout()
         plt.savefig(f'{self.path_prefix}_{epoch + 1:03d}.png')
-        plt.close()
+        plt.show()
 
 
 class AudioAdvGANCallback(tf.keras.callbacks.Callback):
