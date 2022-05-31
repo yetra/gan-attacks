@@ -36,19 +36,26 @@ def images_to_gif(image_pattern, gif_path, delete_frames=False):
             os.remove(filename)
 
 
-def generate_adv_examples(generator, inputs, latent_dim=None, perturb_bound=None):
+def generate_adv_examples(
+        generator,
+        original_examples,
+        latent_dim=None,
+        perturb_bound=None
+):
     """
     Generates adversarial examples for the given inputs.
 
     :param generator: the model for generating adversarial perturbations
-    :param inputs: the original examples
+    :param original_examples: the original examples
     :param latent_dim: size of the latent space vector
     (for DCGAN- or WaveGAN-based generators)
     :param perturb_bound: L-infinity norm of the perturbations
     :return: the adversarial examples and corresponding perturbations
     """
-    if latent_dim:
-        inputs = tf.random.normal(shape=(len(inputs), latent_dim))
+    if not latent_dim:
+        inputs = original_examples
+    else:
+        inputs = tf.random.normal(shape=(len(original_examples), latent_dim))
 
     perturbations = generator(inputs, training=False)
 
@@ -59,7 +66,7 @@ def generate_adv_examples(generator, inputs, latent_dim=None, perturb_bound=None
             perturb_bound
         )
 
-    adv_examples = tf.clip_by_value(inputs + perturbations, -1.0, 1.0)
+    adv_examples = tf.clip_by_value(original_examples + perturbations, -1.0, 1.0)
 
     return adv_examples, perturbations
 
