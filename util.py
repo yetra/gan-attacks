@@ -176,6 +176,59 @@ def images_to_gif(image_pattern, gif_path, delete_frames=False):
             os.remove(filename)
 
 
+def plot_image_results(generator, target, images, target_label, latent_dim=None, perturb_bound=None):
+    """
+    Plots original images with their adversarial counterparts, and displays
+    their classification results.
+
+    :param generator: the model for generating adversarial perturbations
+    :param target: the model for classifying images
+    :param images: the original images
+    :param target_label: the target label of the adversarial attack
+    :param latent_dim: size of the latent space vector (for DCGAN-based generators)
+    :param perturb_bound: L-infinity norm of the perturbations
+    :return:
+    """
+    if not latent_dim:
+        inputs = images
+    else:
+        inputs = tf.random.normal(shape=(len(images), latent_dim))
+
+    perturbations = generator(inputs, training=False)
+
+    if perturb_bound:
+        perturbations = tf.clip_by_value(
+            perturbations,
+            -perturb_bound,
+            perturb_bound
+        )
+
+    adv_images = tf.clip_by_value(images + perturbations, -1.0, 1.0)
+
+    _, ax = plt.subplots(len(images), 2, figsize=(8, 8))
+
+    for i, zipped_images in enumerate(zip(images, adv_images)):
+        for j, image in enumerate(zipped_images):
+            probs = target.predict(image)
+
+            ax[i, j].imshow(
+                image * 127.5 + 127.5,
+                cmap='gray',
+                vmin=0,
+                vmax=255
+            )
+
+            ax[i, j].set_title(
+                f'target: {target_label} ({probs[0][target_label]:.4f})'
+                f'\nassigned: {probs.argmax()} ({probs.max():.4f})'
+            )
+
+            ax[i, j].axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+
 def plot_confusion_matrix(true_labels, predicted_labels, classes, ignore_idx=None):
     """
     Plots a confusion matrix based on the given labels and predictions.
