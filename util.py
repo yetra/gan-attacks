@@ -2,7 +2,11 @@ import glob
 import os
 
 import imageio
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 import tensorflow as tf
 
 from IPython.display import display, Audio
@@ -170,3 +174,35 @@ def images_to_gif(image_pattern, gif_path, delete_frames=False):
     if delete_frames:
         for filename in filenames:
             os.remove(filename)
+
+
+def plot_confusion_matrix(true_labels, predicted_labels, classes, ignore_idx=None):
+    """
+    Plots a confusion matrix based on the given labels and predictions.
+
+    :param true_labels: the true labels
+    :param predicted_labels: the model's predictions
+    :param classes: a collection of all the possible label values
+    :param ignore_idx: index of the true label(s) to ignore in computing the matrix
+    """
+    cm = tf.math.confusion_matrix(
+        labels=true_labels,
+        predictions=predicted_labels
+    ).numpy()
+
+    cm_norm = np.around(cm / cm.sum(axis=1)[:, None], decimals=2)
+
+    if ignore_idx is not None:
+        cm_norm[ignore_idx, :] = np.nan
+
+    cm_df = pd.DataFrame(cm_norm, index=classes, columns=classes)
+
+    plt.figure(figsize=(8, 8))
+
+    sns.set(rc={'axes.facecolor': '#03051A'})
+    sns.heatmap(cm_df, annot=True, vmin=0, vmax=1)
+
+    plt.tight_layout()
+    plt.ylabel('true label')
+    plt.xlabel('predicted label')
+    plt.show()
