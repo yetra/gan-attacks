@@ -77,7 +77,7 @@ class AdvGAN(tf.keras.Model):
             adv_images = tf.clip_by_value(real_images + perturbations, -1, 1)
 
             # calculate the loss components
-            target_output = self.target(adv_images)
+            target_output = self.target(adv_images, training=False)
             adv_loss = self.adv_loss_fn(target_output)
 
             perturb_loss = self.perturb_loss_fn(perturbations)
