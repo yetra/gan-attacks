@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import tensorflow as tf
+import tensorflow_io as tfio
 
 from IPython.display import display, Audio
 
@@ -156,7 +157,6 @@ def plot_image_results(generator, target, images, target_label, latent_dim=None,
     :param target_label: the target label of the adversarial attack
     :param latent_dim: size of the latent space vector (for DCGAN-based generators)
     :param perturb_bound: L-infinity norm of the perturbations
-    :return:
     """
     if not latent_dim:
         inputs = images
@@ -193,6 +193,89 @@ def plot_image_results(generator, target, images, target_label, latent_dim=None,
             )
 
             ax[i, j].axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+
+def to_spectrogram(inputs):
+    """Computes spectrograms for the given audio inputs."""
+    spectrograms = tfio.audio.spectrogram(
+        tf.squeeze(inputs, axis=-1),
+        nfft=None,
+        window=165,
+        stride=65
+    )
+
+    return tf.expand_dims(spectrograms, axis=-1)
+
+
+def plot_audio_results(
+        generator,
+        target,
+        audios,
+        sample_rate,
+        target_label,
+        label2idx,
+        idx2label,
+        latent_dim=None,
+        perturb_bound=None
+):
+    """
+    Plots original audio examples with their adversarial counterparts, and
+    displays their classification results.
+
+    :param generator: the model for generating adversarial perturbations
+    :param target: the model for classifying images
+    :param audios: the original audio examples
+    :param sample_rate: sample rate of the audio examples
+    :param target_label: the target label of the adversarial attack
+    :param label2idx: maps label names to indices
+    :param idx2label: maps indices to label names
+    :param latent_dim: size of the latent space vector (for WaveGAN-based generators)
+    :param perturb_bound: L-infinity norm of the perturbations
+    """
+    if not latent_dim:
+        inputs = audios
+    else:
+        inputs = tf.random.normal(shape=(len(audios), latent_dim))
+
+    perturbations = generator(inputs, training=False)
+
+    if perturb_bound:
+        perturbations = tf.clip_by_value(
+            perturbations,
+            -perturb_bound,
+            perturb_bound
+        )
+
+    adv_audios = tf.clip_by_value(audios + perturbations, -1.0, 1.0)
+
+    _, axes = plt.subplots(len(audios), 4, figsize=(16, 20))
+
+    for i, zipped_audios in enumerate(zip(audios, adv_audios)):
+        for j, audio in enumerate(zipped_audios):
+            probs = target.predict(audio)
+
+            display_audio = tf.squeeze(audio).numpy()
+            display(Audio(display_audio, rate=sample_rate))
+
+            ax = axes[i][j]
+            ax.plot(display_audio)
+            ax.set_yticks(np.arange(-1.0, 1.2, 0.2))
+            ax.set_title(
+                f'\ntarget: {target_label} ({probs[0][label2idx(target_label)]:.4f})'
+                f'\nassigned: {idx2label(probs.argmax())} ({probs.max():.4f})'
+            )
+
+            spectrogram = tf.squeeze(to_spectrogram(audio))
+
+            ax = axes[i][j + 2]
+            ax.imshow(tf.math.log(tf.transpose(spectrogram)).numpy())
+            ax.set_title(
+                f'\ntarget: {target_label} ({probs[0][label2idx(target_label)]:.4f})'
+                f'\nassigned: {idx2label(probs.argmax())} ({probs.max():.4f})'
+            )
 
     plt.tight_layout()
     plt.show()
