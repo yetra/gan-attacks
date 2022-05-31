@@ -42,13 +42,14 @@ class ImageAdvGANCallback(tf.keras.callbacks.Callback):
                 self.perturb_bound
             )
 
+        adv_images = tf.clip_by_value(self.real_images + perturbations, -1.0, 1.0)
+
         _, ax = plt.subplots(self.num_images, 3, figsize=(8, 8))
 
-        for i, real_image in enumerate(self.real_images):
-            real_image = real_image[0, :, :, 0]
+        for i in range(self.num_images):
+            real_image = self.real_images[i, :, :, 0]
             perturbation = perturbations[i, :, :, 0]
-
-            adv_image = tf.clip_by_value(real_image + perturbation, -1.0, 1.0)
+            adv_image = adv_images[i, :, :, 0]
 
             for j, image in enumerate([real_image, perturbation, adv_image]):
                 ax[i, j].imshow(
