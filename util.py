@@ -174,7 +174,14 @@ def generate_adv_examples(generator, inputs, latent_dim=None, perturb_bound=None
     return adv_examples, perturbations
 
 
-def plot_image_results(orig_images, adv_images, target, target_label):
+def plot_image_results(
+        orig_images,
+        adv_images,
+        target,
+        target_label,
+        label2idx=lambda x: x,
+        idx2label=lambda x: x,
+):
     """
     Plots original images with their adversarial counterparts, and displays
     their classification results.
@@ -183,6 +190,8 @@ def plot_image_results(orig_images, adv_images, target, target_label):
     :param adv_images: the adversarial images
     :param target: the model for classifying images
     :param target_label: the target label of the adversarial attack
+    :param label2idx: maps label names to indices
+    :param idx2label: maps indices to label names
     """
     _, ax = plt.subplots(len(orig_images), 2, figsize=(8, 8))
 
@@ -198,8 +207,8 @@ def plot_image_results(orig_images, adv_images, target, target_label):
             )
 
             ax[i, j].set_title(
-                f'target: {target_label} ({probs[0][target_label]:.4f})'
-                f'\nassigned: {probs.argmax()} ({probs.max():.4f})'
+                f'target: {target_label} ({probs[0][label2idx(target_label)]:.4f})'
+                f'\nassigned: {idx2label(probs.argmax())} ({probs.max():.4f})'
             )
 
             ax[i, j].axis('off')
@@ -226,8 +235,8 @@ def plot_audio_results(
         sample_rate,
         target,
         target_label,
-        label2idx,
-        idx2label,
+        label2idx=lambda x: x,
+        idx2label=lambda x: x,
 ):
     """
     Plots original audio examples with their adversarial counterparts, and
