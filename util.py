@@ -94,7 +94,7 @@ def plot_image_results(
 
     for i, zipped_images in enumerate(zip(orig_images, adv_images)):
         for j, image in enumerate(zipped_images):
-            probs = target.predict(image)
+            probs = target.predict(image[tf.newaxis, :])
 
             ax[i, j].imshow(
                 image * 127.5 + 127.5,
