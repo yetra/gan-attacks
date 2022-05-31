@@ -174,37 +174,19 @@ def generate_adv_examples(generator, inputs, latent_dim=None, perturb_bound=None
     return adv_examples, perturbations
 
 
-def plot_image_results(generator, target, images, target_label, latent_dim=None, perturb_bound=None):
+def plot_image_results(orig_images, adv_images, target, target_label):
     """
     Plots original images with their adversarial counterparts, and displays
     their classification results.
 
-    :param generator: the model for generating adversarial perturbations
+    :param orig_images: the original images
+    :param adv_images: the adversarial images
     :param target: the model for classifying images
-    :param images: the original images
     :param target_label: the target label of the adversarial attack
-    :param latent_dim: size of the latent space vector (for DCGAN-based generators)
-    :param perturb_bound: L-infinity norm of the perturbations
     """
-    if not latent_dim:
-        inputs = images
-    else:
-        inputs = tf.random.normal(shape=(len(images), latent_dim))
+    _, ax = plt.subplots(len(orig_images), 2, figsize=(8, 8))
 
-    perturbations = generator(inputs, training=False)
-
-    if perturb_bound:
-        perturbations = tf.clip_by_value(
-            perturbations,
-            -perturb_bound,
-            perturb_bound
-        )
-
-    adv_images = tf.clip_by_value(images + perturbations, -1.0, 1.0)
-
-    _, ax = plt.subplots(len(images), 2, figsize=(8, 8))
-
-    for i, zipped_images in enumerate(zip(images, adv_images)):
+    for i, zipped_images in enumerate(zip(orig_images, adv_images)):
         for j, image in enumerate(zipped_images):
             probs = target.predict(image)
 
@@ -239,49 +221,29 @@ def to_spectrogram(inputs):
 
 
 def plot_audio_results(
-        generator,
-        target,
-        audios,
+        orig_audios,
+        adv_audios,
         sample_rate,
+        target,
         target_label,
         label2idx,
         idx2label,
-        latent_dim=None,
-        perturb_bound=None
 ):
     """
     Plots original audio examples with their adversarial counterparts, and
     displays their classification results.
 
-    :param generator: the model for generating adversarial perturbations
-    :param target: the model for classifying images
-    :param audios: the original audio examples
+    :param orig_audios: the original audio examples
+    :param adv_audios: the adversarial audio examples
     :param sample_rate: sample rate of the audio examples
+    :param target: the model for classifying images
     :param target_label: the target label of the adversarial attack
     :param label2idx: maps label names to indices
     :param idx2label: maps indices to label names
-    :param latent_dim: size of the latent space vector (for WaveGAN-based generators)
-    :param perturb_bound: L-infinity norm of the perturbations
     """
-    if not latent_dim:
-        inputs = audios
-    else:
-        inputs = tf.random.normal(shape=(len(audios), latent_dim))
+    _, axes = plt.subplots(len(orig_audios), 4, figsize=(16, 20))
 
-    perturbations = generator(inputs, training=False)
-
-    if perturb_bound:
-        perturbations = tf.clip_by_value(
-            perturbations,
-            -perturb_bound,
-            perturb_bound
-        )
-
-    adv_audios = tf.clip_by_value(audios + perturbations, -1.0, 1.0)
-
-    _, axes = plt.subplots(len(audios), 4, figsize=(16, 20))
-
-    for i, zipped_audios in enumerate(zip(audios, adv_audios)):
+    for i, zipped_audios in enumerate(zip(orig_audios, adv_audios)):
         for j, audio in enumerate(zipped_audios):
             probs = target.predict(audio)
 
