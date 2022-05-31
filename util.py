@@ -97,7 +97,7 @@ def plot_image_results(
             probs = target.predict(image[tf.newaxis, :])
 
             ax[i, j].imshow(
-                image * 127.5 + 127.5,
+                tf.squeeze(image, axis=-1) * 127.5 + 127.5,
                 cmap='gray',
                 vmin=0,
                 vmax=255
