@@ -6,7 +6,7 @@ def carlini_wagner_loss_fn(target_label):
         max_probs = tf.reduce_max(target_output, axis=1)
         target_label_probs = target_output[:, target_label]
 
-        return tf.reduce_sum(tf.maximum(max_probs - target_label_probs, 0))
+        return tf.reduce_sum(max_probs - target_label_probs)
 
     return _carlini_wagner_loss_fn
 
