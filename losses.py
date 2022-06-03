@@ -13,7 +13,7 @@ def carlini_wagner_loss_fn(target_label):
 
 def l2_norm_soft_hinge_loss_fn(bound):
     def _l2_norm_soft_hinge_loss_fn(perturbations):
-        reshaped = tf.reshape(perturbations, (perturbations.shape[0], -1))
+        reshaped = tf.reshape(perturbations, (tf.shape(perturbations)[0], -1))
 
         return tf.reduce_mean(tf.maximum(tf.norm(reshaped, axis=1) - bound, 0))
 
