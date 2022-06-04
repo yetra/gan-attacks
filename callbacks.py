@@ -76,18 +76,20 @@ class AudioAdvGANCallback(tf.keras.callbacks.Callback):
     after each epoch.
     """
 
-    def __init__(self, real_audios, sample_rate, latent_dim=None, perturb_bound=None):
+    def __init__(self, real_audios, sample_rate, path_prefix, latent_dim=None, perturb_bound=None):
         """
         Inits the `AudioAdvGANCallback`.
 
         :param real_audios: a sample of real audio examples
         :param sample_rate: audio sample rate
+        :param path_prefix: prefix of the path at which to save the images
         :param latent_dim: size of the latent space vector (for WaveGAN-based generators)
         :param perturb_bound: L-infinity norm of the perturbations
         """
         self.real_audios = real_audios
         self.num_audios = len(real_audios)
         self.sample_rate = sample_rate
+        self.path_prefix = path_prefix
 
         if not latent_dim:
             self.inputs = real_audios
@@ -120,4 +122,5 @@ class AudioAdvGANCallback(tf.keras.callbacks.Callback):
                 ax[i, j].set_yticks(np.arange(-1.0, 1.4, 0.4))
 
         plt.tight_layout()
+        plt.savefig(f'{self.path_prefix}_{epoch + 1:03d}.png')
         plt.show()
