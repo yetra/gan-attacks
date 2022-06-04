@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
 
 from IPython.display import display, Audio
@@ -105,9 +106,18 @@ class AudioAdvGANCallback(tf.keras.callbacks.Callback):
                 self.perturb_bound
             )
 
+        _, ax = plt.subplots(self.num_audios, 3, figsize=(8, 8))
+
         for i, real_audio in enumerate(self.real_audios):
             adv_audio = real_audio + perturbations[i]
             adv_audio = tf.clip_by_value(adv_audio, -1.0, 1.0)
             adv_audio = tf.squeeze(adv_audio, axis=-1).numpy()
 
             display(Audio(adv_audio, rate=self.sample_rate))
+
+            for j, audio in enumerate([real_audio, perturbations[i], adv_audio]):
+                ax[i, j].plot(tf.squeeze(audio).numpy())
+                ax[i, j].set_yticks(np.arange(-1.0, 1.4, 0.4))
+
+        plt.tight_layout()
+        plt.show()
