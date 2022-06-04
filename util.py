@@ -151,7 +151,7 @@ def plot_audio_results(
 
     for i, zipped_audios in enumerate(zip(orig_audios, adv_audios)):
         for j, audio in enumerate(zipped_audios):
-            probs = target.predict(audio)
+            probs = target.predict(audio[tf.newaxis, :])
 
             display_audio = tf.squeeze(audio).numpy()
             display(Audio(display_audio, rate=sample_rate))
